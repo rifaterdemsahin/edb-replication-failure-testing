@@ -13,13 +13,13 @@
 
 ```bash
 # Apply Primary StatefulSet
-kubectl apply -f k8s/postgres-primary.yaml
+kubectl apply -f 5_Symbols/k8s/postgres-primary.yaml
 
 # Wait for Primary to be ready
 kubectl wait --for=condition=ready pod/postgres-primary-0 --timeout=120s
 
 # Apply Replica StatefulSet
-kubectl apply -f k8s/postgres-replica.yaml
+kubectl apply -f 5_Symbols/k8s/postgres-replica.yaml
 
 # Wait for Replica to be ready
 kubectl wait --for=condition=ready pod/postgres-replica-0 --timeout=180s
@@ -29,7 +29,7 @@ kubectl wait --for=condition=ready pod/postgres-replica-0 --timeout=180s
 
 ```bash
 # Run health check script
-./scripts/check-replication.sh
+./5_Symbols/scripts/check-replication.sh
 ```
 
 Expected output should show:
@@ -43,27 +43,27 @@ Expected output should show:
 
 ```bash
 # Interactive mode - choose from menu
-./scripts/simulate-failure.sh
+./5_Symbols/scripts/simulate-failure.sh
 
 # Or run specific scenario
-./scripts/simulate-failure.sh password
+./5_Symbols/scripts/simulate-failure.sh password
 ```
 
 ### 4. Test Automated Recovery
 
 ```bash
 # Run automated fix
-./scripts/fix-replication.sh
+./5_Symbols/scripts/fix-replication.sh
 ```
 
 ### 5. Deploy Kubernetes Jobs (Optional)
 
 ```bash
 # Deploy health check job
-kubectl apply -f k8s/replication-check-job.yaml
+kubectl apply -f 5_Symbols/k8s/replication-check-job.yaml
 
 # Deploy fix job
-kubectl apply -f k8s/fix-replication-job.yaml
+kubectl apply -f 5_Symbols/k8s/fix-replication-job.yaml
 
 # View job logs
 kubectl logs job/replication-check
@@ -125,6 +125,6 @@ kubectl delete configmap postgres-primary-config replication-scripts
 
 ## Documentation
 
-- [REPLICATION_GUIDE.md](./REPLICATION_GUIDE.md) - Troubleshooting reference
-- [RECOVERY_POC.md](./RECOVERY_POC.md) - Recovery demonstration
-- [masterprompt.md](./masterprompt.md) - Project requirements
+- [REPLICATION_GUIDE.md](../4_Formula/REPLICATION_GUIDE.md) - Troubleshooting reference
+- [RECOVERY_POC.md](../4_Formula/RECOVERY_POC.md) - Recovery demonstration
+- [masterprompt.md](../1_Real_Unknown/masterprompt.md) - Project requirements

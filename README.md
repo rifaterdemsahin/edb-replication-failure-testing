@@ -1,46 +1,72 @@
 # EDB PostgreSQL Replication Failure Testing
 
-A complete EDB PostgreSQL replication management and testing framework running on Kubernetes. This project provides automated tools for monitoring, testing, and recovering from replication failures.
+A complete EDB PostgreSQL replication management and testing framework running on Kubernetes.
 
-## 🎯 Purpose
+## 📁 Project Structure
 
-Validates EDB Postgres high-availability health by:
-- **Monitoring**: Detecting replication lag, broken WAL streams, and stale replication slots
-- **Testing**: Simulating various replication failure scenarios
-- **Recovery**: Demonstrating automated healing processes to re-establish broken replication
+This project follows a structured organization pattern:
+
+### 1_Real_Unknown - Objectives
+- **Purpose**: Defines project objectives and key results, starting with the unknown problem
+- **Contents**: Project overview, requirements (masterprompt.md)
+
+### 2_Environment - Roadmap and Use Cases  
+- **Purpose**: Contains the project roadmap with development phases and use cases
+- **Contents**: Setup guide, deployment instructions
+
+### 3_Simulation - UI
+- **Purpose**: User interfaces and technologies (not applicable for this backend project)
+- **Contents**: UI documentation templates
+
+### 4_Formula - Guides and Best Practices
+- **Purpose**: Provides guidelines built by GPT
+- **Contents**: Troubleshooting guide, recovery procedures, security considerations, quick reference
+
+### 5_Symbols - Core Source Code
+- **Purpose**: Contains the main application files
+- **Contents**: 
+  - `k8s/` - Kubernetes manifests for Primary/Replica StatefulSets
+  - `scripts/` - Automation scripts for monitoring, failure simulation, and recovery
+
+### 6_Semblance - Error Logs and Solutions
+- **Purpose**: Documents common issues, causes, and solutions
+- **Contents**: Debugging tips and workarounds
+
+### 7_Testing_known - Validation
+- **Purpose**: Contains test plans, validation procedures, and acceptance criteria
+- **Contents**: Test implementation script, validation results, implementation summary
 
 ## 🚀 Quick Start
 
 ```bash
 # 1. Deploy to Kubernetes
-kubectl apply -f k8s/postgres-primary.yaml
-kubectl apply -f k8s/postgres-replica.yaml
+kubectl apply -f 5_Symbols/k8s/postgres-primary.yaml
+kubectl apply -f 5_Symbols/k8s/postgres-replica.yaml
 
-# 2. Verify replication is working
-./scripts/check-replication.sh
+# 2. Verify replication
+./5_Symbols/scripts/check-replication.sh
 
 # 3. Test failure and recovery
-./scripts/simulate-failure.sh password
-./scripts/fix-replication.sh
+./5_Symbols/scripts/simulate-failure.sh password
+./5_Symbols/scripts/fix-replication.sh
 ```
 
-## 📁 Project Structure
+## 📖 Key Documentation
 
-```
-├── k8s/                              # Kubernetes manifests
-│   ├── postgres-primary.yaml        # Primary StatefulSet
-│   ├── postgres-replica.yaml        # Replica StatefulSet
-│   ├── replication-check-job.yaml   # Health check Job
-│   └── fix-replication-job.yaml     # Automated repair Job
-├── scripts/                          # Automation scripts
-│   ├── check-replication.sh         # Health monitoring
-│   ├── simulate-failure.sh          # Failure simulation
-│   └── fix-replication.sh           # Automated recovery
-├── SETUP.md                          # Deployment guide
-├── REPLICATION_GUIDE.md              # Troubleshooting reference
-├── RECOVERY_POC.md                   # Recovery demonstration
-└── masterprompt.md                   # Project requirements
+- **[1_Real_Unknown/README.md](./1_Real_Unknown/README.md)** - Project overview and objectives
+- **[2_Environment/SETUP.md](./2_Environment/SETUP.md)** - Deployment guide
+- **[4_Formula/REPLICATION_GUIDE.md](./4_Formula/REPLICATION_GUIDE.md)** - Troubleshooting reference
+- **[4_Formula/RECOVERY_POC.md](./4_Formula/RECOVERY_POC.md)** - Recovery demonstration
+- **[4_Formula/QUICK_REFERENCE.md](./4_Formula/QUICK_REFERENCE.md)** - Command cheat sheet
+- **[7_Testing_known/IMPLEMENTATION_SUMMARY.md](./7_Testing_known/IMPLEMENTATION_SUMMARY.md)** - Project completion report
 
+## 🧪 Testing
+
+Run the verification script to validate the implementation:
+
+```bash
+cd 7_Testing_known
+./test-implementation.sh
 ```
 
 ## ✨ Features
@@ -51,21 +77,6 @@ kubectl apply -f k8s/postgres-replica.yaml
 - ✅ **Data Consistency**: Verify replication integrity
 - ✅ **Monitoring**: Real-time health checks with detailed metrics
 - ✅ **Documentation**: Comprehensive guides and runbooks
-
-## 📖 Documentation
-
-- **[SETUP.md](./SETUP.md)** - Quick start and deployment guide
-- **[REPLICATION_GUIDE.md](./REPLICATION_GUIDE.md)** - Comprehensive troubleshooting guide
-- **[RECOVERY_POC.md](./RECOVERY_POC.md)** - Recovery proof of concept demonstration
-- **[masterprompt.md](./masterprompt.md)** - Original project requirements
-
-## 🧪 Testing
-
-Run the verification script to validate the implementation:
-
-```bash
-./test-implementation.sh
-```
 
 ## 🛠️ Technology Stack
 

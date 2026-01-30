@@ -4,13 +4,13 @@
 
 ```bash
 # 1. Deploy
-kubectl apply -f k8s/postgres-primary.yaml -f k8s/postgres-replica.yaml
+kubectl apply -f 5_Symbols/k8s/postgres-primary.yaml -f 5_Symbols/k8s/postgres-replica.yaml
 
 # 2. Check
-./scripts/check-replication.sh
+./5_Symbols/scripts/check-replication.sh
 
 # 3. Test
-./scripts/simulate-failure.sh password && ./scripts/fix-replication.sh
+./5_Symbols/scripts/simulate-failure.sh password && ./5_Symbols/scripts/fix-replication.sh
 ```
 
 ## Essential Commands
@@ -18,10 +18,10 @@ kubectl apply -f k8s/postgres-primary.yaml -f k8s/postgres-replica.yaml
 ### Deployment
 ```bash
 # Deploy Primary
-kubectl apply -f k8s/postgres-primary.yaml
+kubectl apply -f 5_Symbols/k8s/postgres-primary.yaml
 
 # Deploy Replica (wait 2 min for Primary)
-kubectl apply -f k8s/postgres-replica.yaml
+kubectl apply -f 5_Symbols/k8s/postgres-replica.yaml
 
 # Check status
 kubectl get pods -l app=postgres
@@ -31,10 +31,10 @@ kubectl get statefulsets
 ### Health Monitoring
 ```bash
 # Run health check
-./scripts/check-replication.sh
+./5_Symbols/scripts/check-replication.sh
 
 # Watch continuously
-watch -n 5 ./scripts/check-replication.sh
+watch -n 5 ./5_Symbols/scripts/check-replication.sh
 
 # Check from Primary
 kubectl exec -it postgres-primary-0 -- psql -U postgres -d testdb -c "SELECT * FROM pg_stat_replication;"
@@ -46,21 +46,21 @@ kubectl exec -it postgres-replica-0 -- psql -U postgres -d testdb -c "SELECT * F
 ### Failure Scenarios
 ```bash
 # Interactive menu
-./scripts/simulate-failure.sh
+./5_Symbols/scripts/simulate-failure.sh
 
 # Specific scenarios
-./scripts/simulate-failure.sh password      # Break authentication
-./scripts/simulate-failure.sh slot          # Drop replication slot
-./scripts/simulate-failure.sh terminate     # Terminate WAL sender
+./5_Symbols/scripts/simulate-failure.sh password      # Break authentication
+./5_Symbols/scripts/simulate-failure.sh slot          # Drop replication slot
+./5_Symbols/scripts/simulate-failure.sh terminate     # Terminate WAL sender
 ```
 
 ### Recovery
 ```bash
 # Automated fix
-./scripts/fix-replication.sh
+./5_Symbols/scripts/fix-replication.sh
 
 # Manual check after fix
-./scripts/check-replication.sh
+./5_Symbols/scripts/check-replication.sh
 
 # Manual restart if needed
 kubectl rollout restart statefulset/postgres-replica
@@ -87,7 +87,7 @@ kubectl exec -it postgres-replica-0 -- psql -U postgres -d testdb -c "SELECT * F
 
 ## Documentation Links
 
-- [SETUP.md](./SETUP.md) - Full setup guide
+- [SETUP.md](../2_Environment/SETUP.md) - Full setup guide
 - [REPLICATION_GUIDE.md](./REPLICATION_GUIDE.md) - Troubleshooting
 - [RECOVERY_POC.md](./RECOVERY_POC.md) - Recovery examples
 - [SECURITY.md](./SECURITY.md) - Security notes
