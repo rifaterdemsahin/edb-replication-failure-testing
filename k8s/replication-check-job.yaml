@@ -1,0 +1,46 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: replication-check
+spec:
+  template:
+    metadata:
+      labels:
+        app: replication-check
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: check
+        image: postgres:15-alpine
+        command:
+        - /scripts/check-replication.sh
+        env:
+        - name: PRIMARY_HOST
+          value: postgres-primary
+        - name: REPLICA_HOST
+          value: postgres-replica
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          value: postgres
+        - name: POSTGRES_DB
+          value: testdb
+        volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      volumes:
+      - name: scripts
+        configMap:
+          name: replication-scripts
+          defaultMode: 0755
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: replication-scripts
+data:
+  check-replication.sh: |
+    #!/bin/bash
+    # See scripts/check-replication.sh for full implementation
+    echo "Checking replication status..."
+    PGPASSWORD=${POSTGRES_PASSWORD} psql -h ${PRIMARY_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c "SELECT * FROM pg_stat_replication;"

@@ -1,0 +1,85 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-replica
+  labels:
+    app: postgres
+    role: replica
+spec:
+  ports:
+  - port: 5432
+    name: postgres
+  clusterIP: None
+  selector:
+    app: postgres
+    role: replica
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-replica
+spec:
+  serviceName: postgres-replica
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+      role: replica
+  template:
+    metadata:
+      labels:
+        app: postgres
+        role: replica
+    spec:
+      initContainers:
+      - name: init-replica
+        image: postgres:15-alpine
+        command:
+        - bash
+        - "-c"
+        - |
+          set -ex
+          # If data directory is empty, perform pg_basebackup
+          if [ ! -f ${PGDATA}/PG_VERSION ]; then
+            echo "Initializing replica from primary..."
+            PGPASSWORD=replicator_password pg_basebackup -h postgres-primary -D ${PGDATA} -U replicator -v -P -W -R -X stream -c fast
+          else
+            echo "Data directory already exists, skipping initialization"
+          fi
+        env:
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        ports:
+        - containerPort: 5432
+          name: postgres
+        env:
+        - name: POSTGRES_USER
+          value: "postgres"
+        - name: POSTGRES_PASSWORD
+          value: "postgres"
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        args:
+        - "-c"
+        - "hot_standby=on"
+        - "-c"
+        - "primary_conninfo=host=postgres-primary port=5432 user=replicator password=replicator_password application_name=replica"
+        - "-c"
+        - "primary_slot_name=replica_slot"
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-storage
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi

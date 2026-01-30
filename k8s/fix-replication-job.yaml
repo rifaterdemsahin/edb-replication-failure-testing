@@ -1,0 +1,65 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: fix-replication
+spec:
+  template:
+    metadata:
+      labels:
+        app: fix-replication
+    spec:
+      restartPolicy: Never
+      serviceAccountName: replication-fixer
+      containers:
+      - name: fix
+        image: postgres:15-alpine
+        command:
+        - /scripts/fix-replication.sh
+        env:
+        - name: PRIMARY_HOST
+          value: postgres-primary
+        - name: REPLICA_HOST
+          value: postgres-replica
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          value: postgres
+        - name: POSTGRES_DB
+          value: testdb
+        volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      volumes:
+      - name: scripts
+        configMap:
+          name: replication-scripts
+          defaultMode: 0755
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: replication-fixer
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: replication-fixer-role
+rules:
+- apiGroups: ["apps"]
+  resources: ["statefulsets"]
+  verbs: ["get", "list", "patch"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: replication-fixer-binding
+subjects:
+- kind: ServiceAccount
+  name: replication-fixer
+roleRef:
+  kind: Role
+  name: replication-fixer-role
+  apiGroup: rbac.authorization.k8s.io
