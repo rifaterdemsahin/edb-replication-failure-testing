@@ -52,7 +52,7 @@ scenario_drop_slot() {
     echo -e "\n${RED}[Scenario 2] Dropping replication slot...${NC}"
     
     # First, check if slot exists
-    SLOT_EXISTS=$(psql -h ${PRIMARY_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -c "SELECT COUNT(*) FROM pg_replication_slots WHERE slot_name = 'replica_slot';")
+    SLOT_EXISTS=$(psql -h ${PRIMARY_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -c "SELECT COUNT(*) FROM pg_replication_slots WHERE slot_name = 'replica_slot';" | xargs)
     
     if [ "${SLOT_EXISTS}" -eq 0 ]; then
         echo "Replication slot 'replica_slot' does not exist"
@@ -75,9 +75,9 @@ scenario_terminate_walsender() {
     # Get WAL sender PID
     WALSENDER_PID=$(psql -h ${PRIMARY_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -c "
         SELECT pid FROM pg_stat_replication WHERE application_name = 'replica' LIMIT 1;
-    ")
+    " | xargs)
     
-    if [ -z "${WALSENDER_PID}" ] || [ "${WALSENDER_PID}" = "" ]; then
+    if [ -z "${WALSENDER_PID}" ]; then
         echo "No active WAL sender process found"
         return 1
     fi

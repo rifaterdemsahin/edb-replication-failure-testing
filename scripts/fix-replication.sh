@@ -41,7 +41,7 @@ check_primary_accessible() {
 
 # Function to check replication status
 check_replication_status() {
-    REPL_COUNT=$(psql -h ${PRIMARY_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -c "SELECT COUNT(*) FROM pg_stat_replication WHERE state = 'streaming';")
+    REPL_COUNT=$(psql -h ${PRIMARY_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -c "SELECT COUNT(*) FROM pg_stat_replication WHERE state = 'streaming';" | xargs)
     
     if [ "${REPL_COUNT}" -gt 0 ]; then
         return 0  # Replication is working
@@ -67,7 +67,7 @@ fix_replication_slot() {
     echo -e "\n${BLUE}[Fix 2] Checking and fixing replication slot...${NC}"
     
     # Check if slot exists
-    SLOT_EXISTS=$(psql -h ${PRIMARY_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -c "SELECT COUNT(*) FROM pg_replication_slots WHERE slot_name = 'replica_slot';")
+    SLOT_EXISTS=$(psql -h ${PRIMARY_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -c "SELECT COUNT(*) FROM pg_replication_slots WHERE slot_name = 'replica_slot';" | xargs)
     
     if [ "${SLOT_EXISTS}" -eq 0 ]; then
         echo "Creating missing replication slot..."
@@ -79,9 +79,9 @@ fix_replication_slot() {
         echo -e "${GREEN}✓ Replication slot created${NC}"
     else
         # Check if slot is inactive
-        SLOT_ACTIVE=$(psql -h ${PRIMARY_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -c "SELECT active FROM pg_replication_slots WHERE slot_name = 'replica_slot';")
+        SLOT_ACTIVE=$(psql -h ${PRIMARY_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -c "SELECT active FROM pg_replication_slots WHERE slot_name = 'replica_slot';" | xargs)
         
-        if [ "${SLOT_ACTIVE}" = " f" ]; then
+        if [ "${SLOT_ACTIVE}" = "f" ]; then
             echo "Replication slot exists but is inactive"
             echo "This may require manual intervention or replica restart"
         else
@@ -94,7 +94,7 @@ fix_replication_slot() {
 fix_replication_user() {
     echo -e "\n${BLUE}[Fix 3] Verifying replication user...${NC}"
     
-    USER_EXISTS=$(psql -h ${PRIMARY_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -c "SELECT COUNT(*) FROM pg_user WHERE usename = '${REPLICATION_USER}';")
+    USER_EXISTS=$(psql -h ${PRIMARY_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -c "SELECT COUNT(*) FROM pg_user WHERE usename = '${REPLICATION_USER}';" | xargs)
     
     if [ "${USER_EXISTS}" -eq 0 ]; then
         echo "Creating missing replication user..."

@@ -41,7 +41,7 @@ check_primary() {
     
     # Check pg_stat_replication
     echo -e "\n${GREEN}Checking replication connections:${NC}"
-    REPLICATION_COUNT=$(psql -h ${PRIMARY_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -c "SELECT COUNT(*) FROM pg_stat_replication;")
+    REPLICATION_COUNT=$(psql -h ${PRIMARY_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -c "SELECT COUNT(*) FROM pg_stat_replication;" | xargs)
     
     if [ "${REPLICATION_COUNT}" -eq 0 ]; then
         echo -e "${RED}ERROR: No replicas connected to primary${NC}"
@@ -65,7 +65,7 @@ check_primary() {
     "
     
     # Check for streaming state
-    STREAMING_COUNT=$(psql -h ${PRIMARY_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -c "SELECT COUNT(*) FROM pg_stat_replication WHERE state = 'streaming';")
+    STREAMING_COUNT=$(psql -h ${PRIMARY_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -c "SELECT COUNT(*) FROM pg_stat_replication WHERE state = 'streaming';" | xargs)
     
     if [ "${STREAMING_COUNT}" -eq 0 ]; then
         echo -e "${YELLOW}WARNING: No replicas in streaming state${NC}"
@@ -75,7 +75,7 @@ check_primary() {
     echo -e "✓ ${STREAMING_COUNT} replica(s) in streaming state"
     
     # Check replication lag
-    MAX_LAG=$(psql -h ${PRIMARY_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -c "SELECT COALESCE(MAX(pg_wal_lsn_diff(pg_current_wal_lsn(), replay_lsn)), 0) FROM pg_stat_replication;")
+    MAX_LAG=$(psql -h ${PRIMARY_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -c "SELECT COALESCE(MAX(pg_wal_lsn_diff(pg_current_wal_lsn(), replay_lsn)), 0) FROM pg_stat_replication;" | xargs)
     
     if [ "${MAX_LAG}" -gt 1048576 ]; then  # 1MB
         echo -e "${YELLOW}WARNING: Replication lag is ${MAX_LAG} bytes (> 1MB)${NC}"
@@ -97,9 +97,9 @@ check_replica() {
     echo "✓ Replica server is accessible"
     
     # Check if replica is in recovery mode
-    IN_RECOVERY=$(psql -h ${REPLICA_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -c "SELECT pg_is_in_recovery();")
+    IN_RECOVERY=$(psql -h ${REPLICA_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -c "SELECT pg_is_in_recovery();" | xargs)
     
-    if [ "${IN_RECOVERY}" != " t" ]; then
+    if [ "${IN_RECOVERY}" != "t" ]; then
         echo -e "${RED}ERROR: Replica is not in recovery mode${NC}"
         return 1
     fi
@@ -123,9 +123,9 @@ check_replica() {
     "
     
     # Check streaming status
-    WAL_STATUS=$(psql -h ${REPLICA_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -c "SELECT status FROM pg_stat_wal_receiver;")
+    WAL_STATUS=$(psql -h ${REPLICA_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -c "SELECT status FROM pg_stat_wal_receiver;" | xargs)
     
-    if [ "${WAL_STATUS}" != " streaming" ]; then
+    if [ "${WAL_STATUS}" != "streaming" ]; then
         echo -e "${RED}ERROR: WAL receiver is not streaming (status: ${WAL_STATUS})${NC}"
         return 1
     fi
